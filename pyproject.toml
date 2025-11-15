@@ -20,10 +20,24 @@ dependencies = [
 ]
 
 [project.scripts]
-ink = "ink.main:main"
+ink = "ink.main:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "src" = "ink"
+
+[tool.uv.workspace]
+members = [
+    ".",
+    ".",
+]
+
+[tool.uv.sources]
+ink = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "ink",
+]

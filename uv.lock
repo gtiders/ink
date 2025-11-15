@@ -266,6 +266,11 @@ dependencies = [
     { name = "typer" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "ink" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "ase", specifier = ">=3.26.0" },
@@ -277,6 +282,9 @@ requires-dist = [
     { name = "seekpath", specifier = ">=2.1.0" },
     { name = "typer", specifier = ">=0.20.0" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "ink", editable = "." }]
 
 [[package]]
 name = "joblib"
