@@ -1,0 +1,575 @@
+# 计算的全局设置
+global:
+  work_dir: ./      
+  vaspkit: vaspkit
+
+
+relax1:
+  poscar: POSCAR
+  potcar: vaspkit -task 103 
+  kpoints: vaspkit -task 102 -kpr 0.03
+  incar:
+    ISTART: 0
+    ISPIN: 1
+    LREAL: .FALSE.
+    ENCUT: 500
+    PREC: Accurate
+    LWAVE: .TRUE.
+    LCHARG: .TRUE.
+    ADDGRID: .TRUE.
+    LASPH: .TRUE.
+    NPAR: 4
+    NSW: 300
+    EDIFF: 1E-8
+    EDIFFG: -1E-4
+    ISMEAR: 0
+    SIGMA: 0.02
+    IBRION: 2
+    ISIF: 3
+  jobscript: |
+    #!/bin/bash
+    #PBS -S /bin/bash
+    #PBS -l walltime=1:00:00
+    #PBS -q six_hours
+    #PBS -l nodes=1:ppn=40
+    #PBS -N relax1
+    #PBS -V
+    cd ${PBS_O_WORKDIR}
+
+    #intel
+    source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+    source /opt/intel/mkl/bin/mklvars.sh intel64
+    source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+
+    mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+
+
+relax2:
+  poscar: relax1/CONTCAR
+  potcar: vaspkit -task 103 
+  kpoints: vaspkit -task 102 -kpr 0.03
+  incar:
+    ISTART: 0
+    ISPIN: 1
+    LREAL: .FALSE.
+    ENCUT: 500
+    PREC: Accurate
+    LWAVE: .TRUE.
+    LCHARG: .TRUE.
+    ADDGRID: .TRUE.
+    LASPH: .TRUE.
+    NPAR: 4
+    NSW: 300
+    EDIFF: 1E-8
+    EDIFFG: -1E-4
+    ISMEAR: 0
+    SIGMA: 0.02
+    IBRION: 2
+    ISIF: 2
+  jobscript: |
+    #!/bin/bash
+    #PBS -S /bin/bash
+    #PBS -l walltime=1:00:00
+    #PBS -q six_hours
+    #PBS -l nodes=1:ppn=40
+    #PBS -N relax1
+    #PBS -V
+    cd ${PBS_O_WORKDIR}
+
+    #intel
+    source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+    source /opt/intel/mkl/bin/mklvars.sh intel64
+    source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+
+    mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+
+static:
+  poscar: relax2/CONTCAR
+  potcar: vaspkit -task 103 
+  kpoints: vaspkit -task 102 -kpr 0.03
+  incar:
+    ISTART: 0
+    ISPIN: 1
+    LREAL: .FALSE.
+    ENCUT: 500
+    PREC: Accurate
+    LWAVE: .TRUE.
+    LCHARG: .TRUE.
+    ADDGRID: .TRUE.
+    LASPH: .TRUE.
+    NPAR: 4
+    ISMEAR: 0
+    SIGMA: 0.02
+    LORBIT: 11
+    NEDOS: 2001
+    NELM: 60
+    EDIFF: 1E-08
+  jobscript: |
+    #!/bin/bash
+    #PBS -S /bin/bash
+    #PBS -l walltime=1:00:00
+    #PBS -q six_hours
+    #PBS -l nodes=1:ppn=40
+    #PBS -N relax1
+    #PBS -V
+    cd ${PBS_O_WORKDIR}
+
+    #intel
+    source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+    source /opt/intel/mkl/bin/mklvars.sh intel64
+    source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+
+    mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+
+dos:
+  poscar: static/POSCAR
+  potcar: vaspkit -task 103 
+  chgcar: static/CHGCAR
+  kpoints: vaspkit -task 102 -kpr 0.03
+  incar:
+    ISTART: 1
+    ISPIN: 1
+    ICHARG: 11         
+    LREAL: .FALSE.       
+    ENCUT:  500        
+    PREC: Accurate   
+    LWAVE: .FALSE.        
+    LCHARG: .FALSE.        
+    ADDGRID: .TRUE.        
+    LASPH: .TRUE.        
+    ISMEAR: 0
+    SIGMA: 0.05
+    LORBIT: 10
+    NEDOS: 2001
+    NELM: 60
+    EDIFF: 1E-08
+    NPAR: 4
+  jobscript: |
+    #!/bin/bash
+    #PBS -S /bin/bash
+    #PBS -l walltime=1:00:00
+    #PBS -q six_hours
+    #PBS -l nodes=1:ppn=40
+    #PBS -N relax1
+    #PBS -V
+    cd ${PBS_O_WORKDIR}
+
+    #intel
+    source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+    source /opt/intel/mkl/bin/mklvars.sh intel64
+    source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+
+    mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+    
+band:
+  poscar: static/POSCAR
+  potcar: vaspkit -task 103 
+  chgcar: static/CHGCAR
+  kpoints: vaspkit -task 303
+  incar:
+    ISTART: 1
+    ISPIN: 1
+    ICHARG: 11         
+    LREAL: .FALSE.       
+    ENCUT:  500        
+    PREC: Accurate   
+    LWAVE: .FALSE.        
+    LCHARG: .FALSE.        
+    ADDGRID: .TRUE.        
+    LASPH: .TRUE.        
+    ISMEAR: 0
+    SIGMA: 0.05
+    LORBIT: 10
+    NEDOS: 2001
+    NELM: 60
+    EDIFF: 1E-08
+    NPAR: 4
+  jobscript: |
+    #!/bin/bash
+    #PBS -S /bin/bash
+    #PBS -l walltime=1:00:00
+    #PBS -q six_hours
+    #PBS -l nodes=1:ppn=40
+    #PBS -N relax1
+    #PBS -V
+    cd ${PBS_O_WORKDIR}
+
+    #intel
+    source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+    source /opt/intel/mkl/bin/mklvars.sh intel64
+    source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+    
+    cp KPATH.in KPOINTS
+
+    mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+
+elf:
+  poscar: static/POSCAR
+  potcar: vaspkit -task 103 
+  kpoints: vaspkit -task 102 -kpr 0.03
+  incar:
+    ISTART: 0
+    ISPIN: 1
+    LREAL: .FALSE.
+    ENCUT: 500
+    PREC: Accurate
+    LWAVE: .TRUE.
+    LCHARG: .TRUE.
+    ADDGRID: .TRUE.
+    LASPH: .TRUE.
+    NPAR: 4
+    ISMEAR: 0
+    SIGMA: 0.02
+    LORBIT: 11
+    NEDOS: 2001
+    NELM: 60
+    EDIFF: 1E-08
+  jobscript: |
+    #!/bin/bash
+    #PBS -S /bin/bash
+    #PBS -l walltime=1:00:00
+    #PBS -q six_hours
+    #PBS -l nodes=1:ppn=40
+    #PBS -N relax1
+    #PBS -V
+    cd ${PBS_O_WORKDIR}
+
+    #intel
+    source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+    source /opt/intel/mkl/bin/mklvars.sh intel64
+    source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+
+    mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+
+lobster:
+  poscar: static/POSCAR
+  potcar: vaspkit -task 103 
+  kpoints: vaspkit -task 102 -kpr 0.03
+  incar:
+    ISTART: 0
+    ISPIN: 1
+    LREAL: .FALSE.
+    ENCUT: 500
+    PREC: Accurate
+    LWAVE: .TRUE.
+    LCHARG: .TRUE.
+    ADDGRID: .TRUE.
+    LASPH: .TRUE.
+    NPAR: 4
+    ISMEAR: 0
+    SIGMA: 0.02
+    LORBIT: 11
+    NEDOS: 2001
+    NELM: 60
+    EDIFF: 1E-08
+    ISYM: 0
+  jobscript: |
+    #!/bin/bash
+    #PBS -S /bin/bash
+    #PBS -l walltime=1:00:00
+    #PBS -q six_hours
+    #PBS -l nodes=1:ppn=40
+    #PBS -N relax1
+    #PBS -V
+    cd ${PBS_O_WORKDIR}
+
+    #intel
+    source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+    source /opt/intel/mkl/bin/mklvars.sh intel64
+    source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+
+    mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+2nd:
+  poscar: static/POSCAR
+  potcar: vaspkit -task 103 
+  kpoints: vaspkit -task 102 -kpr 0.01
+  incar:
+    ISMEAR: 0
+    SIGMA: 0.05
+    ENCUT: 500
+    IBRION: -1
+    EDIFF: 1E-08
+    PREC: Accurate
+    LREAL: .FALSE.
+    LWAVE: .FALSE.
+    LCHARG: .FALSE.
+    ADDGRID: .TRUE.
+    NPAR: 2
+  jobscript: |
+    #!/bin/bash
+    #PBS -S /bin/bash
+    #PBS -l walltime=1:00:00
+    #PBS -q six_hours
+    #PBS -l nodes=1:ppn=40
+    #PBS -N relax1
+    #PBS -V
+    cd ${PBS_O_WORKDIR}
+
+    #intel
+    source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+    source /opt/intel/mkl/bin/mklvars.sh intel64
+    source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+
+    phonopy -d --dim 3 3 3
+
+    mkdir spos0
+    cd spos0 
+    cp ../SPOSCAR POSCAR
+    cp ../INCAR INCAR
+    cp ../KPOINTS KPOINTS
+    cp ../POTCAR POTCAR
+
+    mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+
+    cd ${PBS_O_WORKDIR}
+    mkdir structures
+    cd structures
+
+    for poscar in ../POSCAR-*; do
+        i=${poscar##*-}  # 从文件名中提取序号部分
+        mkdir job$i
+        cp $poscar job$i/POSCAR
+        cp ../INCAR ../KPOINTS ../POTCAR job$i/
+        cd job$i
+
+        mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std > log.dat 
+        cd ..
+    done
+
+    cd ${PBS_O_WORKDIR}
+
+    phonopy -f structures/*/vasprun.xml > phonopy.log
+    phonopy --full-fc --writefc --dim 3 3 3 >> phonopy.log
+
+deform:
+  poscar: static/POSCAR
+  potcar: vaspkit -task 103 
+  kpoints: vaspkit -task 102 -kpr 0.03
+  incar:
+    ISMEAR: 0
+    SIGMA: 0.05
+    ENCUT: 500
+    IBRION: -1
+    EDIFF: 1E-08
+    PREC: Accurate
+    LREAL: .FALSE.
+    LWAVE: .FALSE.
+    LCHARG: .FALSE.
+    ADDGRID: .TRUE.
+    NPAR: 4
+  jobscript: |
+    #!/bin/bash
+    #PBS -S /bin/bash
+    #PBS -l walltime=1:00:00
+    #PBS -q six_hours
+    #PBS -l nodes=1:ppn=40
+    #PBS -N relax1
+    #PBS -V
+    cd ${PBS_O_WORKDIR}
+
+    #intel
+    source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+    source /opt/intel/mkl/bin/mklvars.sh intel64
+    source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+
+    amset deform create > deform-create.log
+
+    # 检查 deform-create.log 中是否包含 "Inequivalent deformations"
+    if grep -q "Inequivalent deformations" 'deform-create.log'; then
+        dis_log=$(grep "Inequivalent deformations" 'deform-create.log')
+    else
+        dis_log=$(grep "Total deformations" 'deform-create.log')
+    fi
+    # 从 dis_log 中提取第5列作为 dis_num
+    dis_num=$(echo $dis_log | awk '{print $5}')
+    echo $dis_num
+    # 获取 dis_num 的长度
+    length=${#dis_num}
+    # 计算需要补全的 0 的数量
+    pad_length=$((length + 1))
+    # 使用 printf 进行补全操作
+    new_dis_num=$(printf "%0${pad_length}d" $dis_num)
+    # undef file create
+    undef_file=$(printf "POSCAR-%0${pad_length}d" 0)
+    echo $undef_file
+    cp POSCAR $undef_file
+    mkdir deforms
+    cd deforms
+    for i in $(seq -w 0 $new_dis_num); do
+        mkdir job$i
+        cp ../POSCAR-$i job$i/POSCAR
+        cp ../INCAR ../KPOINTS ../POTCAR job$i/
+        cd job$i
+
+        mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+        cd ..
+    done
+
+dfpt:
+  poscar: static/POSCAR
+  potcar: vaspkit -task 103 
+  kpoints: vaspkit -task 102 -kpr 0.03
+  incar:
+    ISMEAR: 0
+    SIGMA: 0.05
+    ADDGRID: .True.
+    EDIFF: 1E-8
+    ENCUT: 500
+    PREC: Accurate
+    NSW: 1
+    IBRION: 8
+    LEPSILON: .True.
+    KPAR: 2
+    jobscript: |
+      #!/bin/bash
+      #PBS -S /bin/bash
+      #PBS -l walltime=1:00:00
+      #PBS -q six_hours
+      #PBS -l nodes=1:ppn=40
+      #PBS -N relax1
+      #PBS -V
+      cd ${PBS_O_WORKDIR}
+
+      #intel
+      source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+      source /opt/intel/mkl/bin/mklvars.sh intel64
+      source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+
+      mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+
+elastic:
+  poscar: static/POSCAR
+  potcar: vaspkit -task 103 
+  kpoints: vaspkit -task 102 -kpr 0.03
+  incar:
+    ISTART: 0
+    ISPIN: 1
+    ISMEAR: 0
+    SIGMA: 0.05
+    LREAL: .FALSE. 
+    ENCUT: 500 
+    LWAVE: .F. 
+    LCHARG: .F. 
+    LASPH: .TRUE. 
+    PREC: Accurate 
+    IBRION: 6 
+    NFREE: 2 
+    ISIF: 3 
+    NSW: 1 
+    POTIM: 0.015 
+    EDIFF: 1E-8
+    jobscript: |
+      #!/bin/bash
+      #PBS -S /bin/bash
+      #PBS -l walltime=1:00:00
+      #PBS -q six_hours
+      #PBS -l nodes=1:ppn=40
+      #PBS -N relax1
+      #PBS -V
+      cd ${PBS_O_WORKDIR}
+
+      #intel
+      source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+      source /opt/intel/mkl/bin/mklvars.sh intel64
+      source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+
+      mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+
+batch:
+  poscar: static/POSCAR
+  potcar: vaspkit -task 103 
+  kpoints: vaspkit -task 102 -kpr 0.03
+  incar:
+    ISMEAR: 0
+    SIGMA: 0.05
+    ENCUT: 500
+    IBRION: -1
+    EDIFF: 1E-08
+    PREC: Accurate
+    LREAL: .FALSE.
+    LWAVE: .FALSE.
+    LCHARG: .FALSE.
+    ADDGRID: .TRUE.
+    NPAR: 2
+    jobscript: |
+      #!/bin/bash
+
+      # 使用通配符获取文件列表，例如 disp0001, disp0002, ...
+      filelist=(3RD.POSCAR*)
+
+      # 全局变量：将文件列表分成多少份
+      parts=3
+
+      # 统计符合条件的文件数量
+      count=${#filelist[@]}
+      if (( parts > count )); then
+          echo "Error: parts ($parts) cannot be greater than number of files ($count)." >&2
+          exit 1
+      fi
+
+      interval=$((count / parts))
+      start=0  # 数组下标从 0 开始
+
+      # 初始化起始值数组和结束值数组
+      start_array=()
+      end_array=()
+
+      for ((i = 1; i <= parts; i++)); do
+          # 前 parts-1 段使用 interval，最后一段吃掉所有剩余
+          if (( i < parts )); then
+              end=$((start + interval - 1))
+          else
+              end=$((count - 1))
+          fi
+          start_array+=($start)
+          end_array+=($end)
+          start=$((end + 1))
+      done
+
+      # 循环产生脚本
+      for ((i = 0; i < parts; i++)); do
+          start_index=${start_array[$i]}
+          end_index=${end_array[$i]}
+          # 计算当前分片长度（end_index 包含在内）
+          slice_len=$((end_index - start_index + 1))
+          # 取子数组切片
+          slice=("${filelist[@]:start_index:slice_len}")
+
+          cat <<EOF >batch_v$i
+      #!/bin/bash
+      #PBS -S /bin/bash
+      #PBS -l walltime=600:00:00
+      #PBS -q six_hours
+      #PBS -l nodes=1:ppn=40
+      #PBS -N batch_v$i
+      #PBS -o my.out
+      #PBS -e my.err
+      #PBS -V
+
+
+      #intel
+      source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
+      source /opt/intel/mkl/bin/mklvars.sh intel64
+      source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
+
+      cd \${PBS_O_WORKDIR}
+
+      mkdir structures
+      cd structures
+
+      files=("${slice[@]}")
+      for f in "\${files[@]}"; do
+        mkdir "\${f}"
+        cp "../\${f}" "\${f}/POSCAR"
+        cp ../INCAR ../KPOINTS ../POTCAR "\${f}"
+        cd "\${f}"
+        mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_gam > log.dat
+        cd ..
+      done
+      EOF
+      done
+
+
+
+ending:
+  请仔细检查vasp_config.yaml文件, 确保所有任务都已正确配置。

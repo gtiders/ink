@@ -1,1 +1,0 @@
-"""ShengBTE integration module"""
