@@ -1,0 +1,104 @@
+{
+  "languages": {
+    "python": {
+      "extension": "py",
+      "interpreter": "python"
+    },
+    "javascript": {
+      "extension": "js", 
+      "interpreter": "node"
+    },
+    "ruby": {
+      "extension": "rb",
+      "interpreter": "ruby"
+    },
+    "scheme": {
+      "extension": "scm",
+      "interpreter": "scheme"
+    },
+    "zsh": {
+      "extension": "sh",
+      "interpreter": "zsh"
+    },
+    "bash": {
+      "extension": "sh",
+      "interpreter": "bash"
+    },
+    "shell": {
+      "extension": "sh",
+      "interpreter": "sh"
+    },
+    "sh": {
+      "extension": "sh",
+      "interpreter": "sh"
+    },
+    "typst": {
+      "extension": "typ",
+      "interpreter": "typst"
+    },
+    "typescript": {
+      "extension": "ts",
+      "interpreter": "ts-node"
+    },
+    "bun": {
+      "extension": "js",
+      "interpreter": "bun"
+    },
+    "lua": {
+      "extension": "lua",
+      "interpreter": "lua"
+    },
+    "pypy": {
+      "extension": "py",
+      "interpreter": "pypy"
+    },
+    "fish": {
+      "extension": "fish",
+      "interpreter": "fish"
+    },
+    "nu": {
+      "extension": "nu",
+      "interpreter": "nu"
+    },
+    "julia": {
+      "extension": "jl",
+      "interpreter": "julia"
+    },
+    "powershell": {
+      "extension": "ps1",
+      "interpreter": "pwsh"
+    },
+    "pwsh": {
+      "extension": "ps1",
+      "interpreter": "pwsh"
+    },
+    "cmd": {
+      "extension": "cmd",
+      "interpreter": "cmd"
+    },
+    "perl": {
+      "extension": "pl",
+      "interpreter": "perl"
+    },
+    "php": {
+      "extension": "php",
+      "interpreter": "php"
+    },
+    "r": {
+      "extension": "r",
+      "interpreter": "R"
+    },
+    "Rscript": {
+      "extension": "R",
+      "interpreter": "Rscript"
+    },
+    "tcl": {
+      "extension": "tcl",
+      "interpreter": "tclsh"
+    },
+    "groovy": {
+      "extension": "groovy",
+      "interpreter": "groovy"
+    }
+  }
+}

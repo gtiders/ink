@@ -1,0 +1,28 @@
+- default:
+    link:
+      relink: true # 存在时重新链接
+      create: true # 自动创建父目录
+      relative: false # 使用绝对路径进行链接
+      force: true # 强制链接，覆盖已存在的文件
+    shell:
+      stdout: true # 显示命令输出
+      stderr: true # 显示错误输出
+
+- clean: ["~"]
+
+- link:
+    ~/.config/starship.toml: 
+      force: true
+      path: starship/starship.toml
+    ~/.config/wezterm: 
+      force: true
+      path: wezterm
+    ~/AppData/Roaming/helix: 
+      force: true
+      path: helix
+    ~/AppData/Roaming/yazi: 
+      force: true
+      path: yazi
+    ~/AppData/Roaming/nushell/config.nu: 
+      force: true
+      path: shell/nushell/config.nu

@@ -1,0 +1,49 @@
+theme = "ayu_mirage"
+
+
+[editor]
+true-color = true
+line-number = "relative"
+mouse = true
+middle-click-paste = true
+auto-save = false
+auto-format = true
+auto-pairs = true
+color-modes = true
+cursorline = true
+
+
+[editor.cursor-shape]
+normal = "block"
+insert = "bar"
+select = "underline"
+
+
+[editor.file-picker]
+hidden = false
+
+
+[editor.statusline]
+left = [ "mode", "spinner" ]
+center = [ "file-name" ]
+right = [
+"diagnostics",
+"selections",
+"position",
+"file-encoding",
+"file-line-ending",
+"file-type"
+]
+separator = "|"
+
+
+[editor.statusline.mode]
+normal = "NORMAL"
+insert = "INSERT"
+select = "SELECT"
+
+
+[editor.lsp]
+auto-signature-help = true
+display-messages = true
+display-signature-help-docs = true

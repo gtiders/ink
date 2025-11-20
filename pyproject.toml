@@ -9,8 +9,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "altair>=6.0.0",
     "ase>=3.26.0",
+    "dotbot>=1.23.1",
     "f90nml>=1.5",
+    "matplotlib>=3.10.7",
     "numpy>=2.3.4",
     "pandas>=2.3.3",
     "pymatgen>=2025.10.7",
@@ -19,18 +22,24 @@ dependencies = [
     "typer>=0.20.0",
 ]
 
+# 可选：命令行入口，如果你希望能直接运行 `ink ...`
 [project.scripts]
-ink = "ink.main:app"
+ink = "ink:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src"]
+# 使用 src 布局，包在 src/ink
+packages = ["src/ink","src/sciplots"]
 
-[tool.hatch.build.targets.wheel.force-include]
-"src" = "ink"
+# 用 * 号包含 src 下所有文件（包括 .py、.yaml 等）
+include = ["src/**/*"]
+
+# 你之前已经在用 uv，并设置了清华源，保留即可
+[[tool.uv.index]]
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
+default = true
 
 [tool.uv.workspace]
 members = [
-    ".",
     ".",
 ]
 
