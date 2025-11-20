@@ -1,21 +1,26 @@
-from pathlib import Path
-
 import typer
-
-from pymatgen.core.structure import Structure
 import f90nml
+from pathlib import Path
+from pymatgen.core.structure import Structure
 
+def write_control(poscar: Path = typer.Argument(..., help="Path to POSCAR file."),
+    sx: int = typer.Argument(..., help="Supercell size in x (scell(1))."),
+    sy: int = typer.Argument(..., help="Supercell size in y (scell(2))."),
+    sz: int = typer.Argument(..., help="Supercell size in z (scell(3))."),
+    output: Path = typer.Option(
+        Path("CONTROL"),
+        "-o",
+        "--output",
+        help="Output CONTROL file path (default: CONTROL)",
+    ),
+):
+    """Generate a ShengBTE CONTROL file from a POSCAR and supercell size."""
 
-def build_control_namelist(structure: Structure, scell):
-    """Build a f90nml.Namelist object for ShengBTE CONTROL file.
+    if not poscar.is_file():
+        raise FileNotFoundError(f"POSCAR not found: {poscar}")
 
-    Parameters
-    ----------
-    structure : Structure
-        Pymatgen structure read from POSCAR.
-    scell : tuple[int, int, int]
-        Supercell size (scell(:)).
-    """
+    structure = Structure.from_file(poscar)
+    scell = (sx, sy, sz)
 
     nml = f90nml.Namelist()
 
@@ -63,31 +68,8 @@ def build_control_namelist(structure: Structure, scell):
         "convergence": True,
     }
 
-    return nml
-
-
-def main(
-    poscar: Path = typer.Argument(..., help="Path to POSCAR file."),
-    sx: int = typer.Argument(..., help="Supercell size in x (scell(1))."),
-    sy: int = typer.Argument(..., help="Supercell size in y (scell(2))."),
-    sz: int = typer.Argument(..., help="Supercell size in z (scell(3))."),
-    output: Path = typer.Option(
-        Path("CONTROL"),
-        "-o",
-        "--output",
-        help="Output CONTROL file path (default: CONTROL)",
-    ),
-):
-    """Generate a ShengBTE CONTROL file from a POSCAR and supercell size."""
-
-    if not poscar.is_file():
-        raise FileNotFoundError(f"POSCAR not found: {poscar}")
-
-    structure = Structure.from_file(poscar)
-    scell = (sx, sy, sz)
-
-    nml = build_control_namelist(structure, scell)
-
     with output.open("w") as f:
         nml.write(f)
 
+def split2branch():
+    pass
