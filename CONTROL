@@ -1,34 +1,32 @@
 &allocations
-    natoms = 16
-    nelements = 2
-    ngrid = 14, 14, 14
-    norientations = 0
+    natoms = 4
+    nelements = 3
+    ngrid = 15, 15, 15
 /
+
 &crystal
-    elements = 'Li', 'Sb'
-    lattvec(:,1) = 6.544922671159856, 0.0, 4e-16
-    lattvec(:,2) = -4e-16, 6.544922671159856, 4e-16
-    lattvec(:,3) = 0.0, 0.0, 6.544922671159856
+    elements = 'Li', 'Sb', 'Te'
+    lattvec(:,1) = 2.169684711176106, 1.2526680520541464, 7.060500811851389
+    lattvec(:,2) = -2.169684711176106, 1.2526680520541464, 7.060500811851389
+    lattvec(:,3) = 0.0, -2.505336104108293, 7.060500811851389
     lfactor = 0.1
-    positions(:,1) = 0.5, 0.0, 0.0
-    positions(:,2) = 0.25, 0.25, 0.75
-    positions(:,3) = 0.75, 0.75, 0.25
-    positions(:,4) = 0.5, 0.5, 0.5
-    positions(:,5) = 0.25, 0.75, 0.25
-    positions(:,6) = 0.75, 0.25, 0.75
-    positions(:,7) = 0.0, 0.0, 0.5
-    positions(:,8) = 0.75, 0.25, 0.25
-    positions(:,9) = 0.25, 0.75, 0.75
-    positions(:,10) = 0.0, 0.5, 0.0
-    positions(:,11) = 0.75, 0.75, 0.75
-    positions(:,12) = 0.25, 0.25, 0.25
-    positions(:,13) = 0.0, 0.0, 0.0
-    positions(:,14) = 0.0, 0.5, 0.5
-    positions(:,15) = 0.5, 0.0, 0.5
-    positions(:,16) = 0.5, 0.5, 0.0
-    scell = 3, 3, 3
-    types = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2
+    positions(:,1) = 0.5, 0.5, 0.5
+    positions(:,2) = -0.0, -0.0, 0.0
+    positions(:,3) = 0.7524130045454883, 0.7524130045454883, 0.7524130045454883
+    positions(:,4) = 0.2475869954545045, 0.2475869954545045, 0.2475869954545045
+    scell = 4, 4, 4
+    types = 1, 2, 3, 3
 /
+
 &parameters
-    t = 300.0
+    t_max = 900
+    t_min = 300
+    t_step = 100
+    scalebroad = 0.5
+/
+
+&flags
+    convergence = .true.
+    nanowires = .false.
+    nonanalytic = .true.
 /
