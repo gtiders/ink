@@ -1,0 +1,10 @@
+{
+    "supercell": [3, 3, 3],
+    "n_structures": 100,
+    "rattle_std": 0.015,
+    "cutoffs": [6.0, 5.0, 4.0],
+    "fit_method": "ridge",
+    "min_distance": 1.8,
+    "save_higher_order": true,
+    "output_dir": "fc_output"
+}
