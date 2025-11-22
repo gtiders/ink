@@ -1,12 +1,24 @@
 import typer
 import f90nml
 from pathlib import Path
+from typing import Optional
 from pymatgen.core.structure import Structure
 
-def write_control(poscar: Path = typer.Argument(..., help="Path to POSCAR file."),
+def write_control(
+    poscar: Path = typer.Argument(..., help="Path to POSCAR file."),
     sx: int = typer.Argument(..., help="Supercell size in x (scell(1))."),
     sy: int = typer.Argument(..., help="Supercell size in y (scell(2))."),
     sz: int = typer.Argument(..., help="Supercell size in z (scell(3))."),
+    is_born: bool = typer.Option(
+        False,
+        "--is-born",
+        help="Enable Born effective charges (requires OUTCAR)",
+    ),
+    outcar: Optional[Path] = typer.Option(
+        None,
+        "--outcar",
+        help="Path to OUTCAR file (required if --is-born)",
+    ),
     output: Path = typer.Option(
         Path("CONTROL"),
         "-o",
@@ -18,6 +30,15 @@ def write_control(poscar: Path = typer.Argument(..., help="Path to POSCAR file."
 
     if not poscar.is_file():
         raise FileNotFoundError(f"POSCAR not found: {poscar}")
+
+    if is_born:
+        if outcar is None:
+            raise ValueError("OUTCAR file must be provided when is_born is enabled.")
+        if not outcar.is_file():
+            raise FileNotFoundError(f"OUTCAR not found: {outcar}")
+        from pymatgen.io.vasp.outputs import Outcar
+        born = Outcar(outcar).born
+        epsilon = Outcar(outcar).dielectric_tensor
 
     structure = Structure.from_file(poscar)
     scell = (sx, sy, sz)
@@ -52,6 +73,8 @@ def write_control(poscar: Path = typer.Argument(..., help="Path to POSCAR file."
         "elements": species,
         "types": types,
         "positions": positions,
+        "born": born,
+        "epsilon": epsilon,
         "scell": list(scell),
     }
 
@@ -70,6 +93,3 @@ def write_control(poscar: Path = typer.Argument(..., help="Path to POSCAR file."
 
     with output.open("w") as f:
         nml.write(f)
-
-def split2branch():
-    pass

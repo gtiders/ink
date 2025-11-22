@@ -302,6 +302,7 @@ dependencies = [
     { name = "pandas" },
     { name = "pymatgen" },
     { name = "pyyaml" },
+    { name = "ruamel-yaml" },
     { name = "seekpath" },
     { name = "typer" },
 ]
@@ -322,6 +323,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "pymatgen", specifier = ">=2025.10.7" },
     { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "ruamel-yaml", specifier = ">=0.18.16" },
     { name = "seekpath", specifier = ">=2.1.0" },
     { name = "typer", specifier = ">=0.20.0" },
 ]

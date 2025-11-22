@@ -1,13 +1,12 @@
-# 计算的全局设置
 global:
-  work_dir: ./      
+  work_dir: ./
   vaspkit: vaspkit
 
 
-relax1:
+relax:
   poscar: POSCAR
-  potcar: vaspkit -task 103 
-  kpoints: vaspkit -task 102 -kpr 0.03
+  potcar: vaspkit -task 103
+  kpoints: 0.03
   incar:
     ISTART: 0
     ISPIN: 1
@@ -46,7 +45,7 @@ relax1:
 
 relax2:
   poscar: relax1/CONTCAR
-  potcar: vaspkit -task 103 
+  potcar: vaspkit -task 103
   kpoints: vaspkit -task 102 -kpr 0.03
   incar:
     ISTART: 0
@@ -85,7 +84,7 @@ relax2:
 
 static:
   poscar: relax2/CONTCAR
-  potcar: vaspkit -task 103 
+  potcar: vaspkit -task 103
   kpoints: vaspkit -task 102 -kpr 0.03
   incar:
     ISTART: 0
@@ -123,20 +122,20 @@ static:
 
 dos:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103 
+  potcar: vaspkit -task 103
   chgcar: static/CHGCAR
   kpoints: vaspkit -task 102 -kpr 0.03
   incar:
     ISTART: 1
     ISPIN: 1
-    ICHARG: 11         
-    LREAL: .FALSE.       
-    ENCUT:  500        
-    PREC: Accurate   
-    LWAVE: .FALSE.        
-    LCHARG: .FALSE.        
-    ADDGRID: .TRUE.        
-    LASPH: .TRUE.        
+    ICHARG: 11
+    LREAL: .FALSE.
+    ENCUT: 500
+    PREC: Accurate
+    LWAVE: .FALSE.
+    LCHARG: .FALSE.
+    ADDGRID: .TRUE.
+    LASPH: .TRUE.
     ISMEAR: 0
     SIGMA: 0.05
     LORBIT: 10
@@ -160,23 +159,23 @@ dos:
     source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
 
     mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
-    
+
 band:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103 
+  potcar: vaspkit -task 103
   chgcar: static/CHGCAR
   kpoints: vaspkit -task 303
   incar:
     ISTART: 1
     ISPIN: 1
-    ICHARG: 11         
-    LREAL: .FALSE.       
-    ENCUT:  500        
-    PREC: Accurate   
-    LWAVE: .FALSE.        
-    LCHARG: .FALSE.        
-    ADDGRID: .TRUE.        
-    LASPH: .TRUE.        
+    ICHARG: 11
+    LREAL: .FALSE.
+    ENCUT: 500
+    PREC: Accurate
+    LWAVE: .FALSE.
+    LCHARG: .FALSE.
+    ADDGRID: .TRUE.
+    LASPH: .TRUE.
     ISMEAR: 0
     SIGMA: 0.05
     LORBIT: 10
@@ -198,14 +197,14 @@ band:
     source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
     source /opt/intel/mkl/bin/mklvars.sh intel64
     source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
-    
+
     cp KPATH.in KPOINTS
 
     mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
 
 elf:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103 
+  potcar: vaspkit -task 103
   kpoints: vaspkit -task 102 -kpr 0.03
   incar:
     ISTART: 0
@@ -243,7 +242,7 @@ elf:
 
 lobster:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103 
+  potcar: vaspkit -task 103
   kpoints: vaspkit -task 102 -kpr 0.03
   incar:
     ISTART: 0
@@ -281,7 +280,7 @@ lobster:
     mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
 2nd:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103 
+  potcar: vaspkit -task 103
   kpoints: vaspkit -task 102 -kpr 0.01
   incar:
     ISMEAR: 0
@@ -343,7 +342,7 @@ lobster:
 
 deform:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103 
+  potcar: vaspkit -task 103
   kpoints: vaspkit -task 102 -kpr 0.03
   incar:
     ISMEAR: 0
@@ -407,7 +406,7 @@ deform:
 
 dfpt:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103 
+  potcar: vaspkit -task 103
   kpoints: vaspkit -task 102 -kpr 0.03
   incar:
     ISMEAR: 0
@@ -439,24 +438,24 @@ dfpt:
 
 elastic:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103 
+  potcar: vaspkit -task 103
   kpoints: vaspkit -task 102 -kpr 0.03
   incar:
     ISTART: 0
     ISPIN: 1
     ISMEAR: 0
     SIGMA: 0.05
-    LREAL: .FALSE. 
-    ENCUT: 500 
-    LWAVE: .F. 
-    LCHARG: .F. 
-    LASPH: .TRUE. 
-    PREC: Accurate 
-    IBRION: 6 
-    NFREE: 2 
-    ISIF: 3 
-    NSW: 1 
-    POTIM: 0.015 
+    LREAL: .FALSE.
+    ENCUT: 500
+    LWAVE: .F.
+    LCHARG: .F.
+    LASPH: .TRUE.
+    PREC: Accurate
+    IBRION: 6
+    NFREE: 2
+    ISIF: 3
+    NSW: 1
+    POTIM: 0.015
     EDIFF: 1E-8
     jobscript: |
       #!/bin/bash
@@ -477,7 +476,7 @@ elastic:
 
 batch:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103 
+  potcar: vaspkit -task 103
   kpoints: vaspkit -task 102 -kpr 0.03
   incar:
     ISMEAR: 0
@@ -571,5 +570,4 @@ batch:
 
 
 
-ending:
-  请仔细检查vasp_config.yaml文件, 确保所有任务都已正确配置。
+ending: 请仔细检查vasp_config.yaml文件, 确保所有任务都已正确配置。
