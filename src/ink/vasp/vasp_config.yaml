@@ -1,11 +1,9 @@
 global:
   work_dir: ./
-  vaspkit: vaspkit
-
 
 relax:
-  poscar: POSCAR
-  potcar: vaspkit -task 103
+  poscar: data/POSCAR
+  potcar: data/POTCAR
   kpoints: 0.03
   incar:
     ISTART: 0
@@ -43,49 +41,10 @@ relax:
     mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
 
 
-relax2:
-  poscar: relax1/CONTCAR
-  potcar: vaspkit -task 103
-  kpoints: vaspkit -task 102 -kpr 0.03
-  incar:
-    ISTART: 0
-    ISPIN: 1
-    LREAL: .FALSE.
-    ENCUT: 500
-    PREC: Accurate
-    LWAVE: .TRUE.
-    LCHARG: .TRUE.
-    ADDGRID: .TRUE.
-    LASPH: .TRUE.
-    NPAR: 4
-    NSW: 300
-    EDIFF: 1E-8
-    EDIFFG: -1E-4
-    ISMEAR: 0
-    SIGMA: 0.02
-    IBRION: 2
-    ISIF: 2
-  jobscript: |
-    #!/bin/bash
-    #PBS -S /bin/bash
-    #PBS -l walltime=1:00:00
-    #PBS -q six_hours
-    #PBS -l nodes=1:ppn=40
-    #PBS -N relax1
-    #PBS -V
-    cd ${PBS_O_WORKDIR}
-
-    #intel
-    source /opt/intel/compilers_and_libraries_2018/linux/bin/compilervars.sh intel64
-    source /opt/intel/mkl/bin/mklvars.sh intel64
-    source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
-
-    mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
-
 static:
-  poscar: relax2/CONTCAR
-  potcar: vaspkit -task 103
-  kpoints: vaspkit -task 102 -kpr 0.03
+  poscar: relax/CONTCAR
+  potcar: data/POTCAR
+  kpoints: 0.03
   incar:
     ISTART: 0
     ISPIN: 1
@@ -122,9 +81,10 @@ static:
 
 dos:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103
-  chgcar: static/CHGCAR
-  kpoints: vaspkit -task 102 -kpr 0.03
+  potcar: data/POTCAR
+  cp: 
+    data/CHGCAR CHGCAR
+  kpoints: 0.03
   incar:
     ISTART: 1
     ISPIN: 1
@@ -162,9 +122,9 @@ dos:
 
 band:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103
-  chgcar: static/CHGCAR
-  kpoints: vaspkit -task 303
+  potcar: data/POTCAR
+  cp: static/CHGCAR CHGCAR
+  kpoints: line
   incar:
     ISTART: 1
     ISPIN: 1
@@ -204,8 +164,8 @@ band:
 
 elf:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103
-  kpoints: vaspkit -task 102 -kpr 0.03
+  potcar: data/POTCAR
+  kpoints: 0.03
   incar:
     ISTART: 0
     ISPIN: 1
@@ -242,8 +202,8 @@ elf:
 
 lobster:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103
-  kpoints: vaspkit -task 102 -kpr 0.03
+  potcar: data/POTCAR
+  kpoints: 0.03
   incar:
     ISTART: 0
     ISPIN: 1
@@ -278,10 +238,11 @@ lobster:
     source /opt/intel/impi/2018.1.163/bin64/mpivars.sh
 
     mpirun -np 40 /opt/software/vasp/vasp.5.4.4/vasp_std >log.dat
+
 2nd:
   poscar: static/POSCAR
-  potcar: vaspkit -task 103
-  kpoints: vaspkit -task 102 -kpr 0.01
+  potcar: data/POTCAR
+  kpoints: 0.03
   incar:
     ISMEAR: 0
     SIGMA: 0.05

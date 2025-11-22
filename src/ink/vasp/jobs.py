@@ -1,11 +1,15 @@
+import os
 import math
 import typer
 import subprocess
+import shutil
 from pathlib import Path
 from typing import Optional
 from ruamel.yaml import YAML
 from pymatgen.core.structure import Structure
 from pymatgen.io.vasp.inputs import Kpoints,Incar
+import inspect
+from functools import wraps
 
 
 yaml = YAML(typ="rt")
@@ -45,6 +49,7 @@ class Job:
             self.work_dir = Path(work_dir_cfg)
 
         self.work_dir.mkdir(exist_ok=True)
+        os.chdir(self.work_dir)
 
         self._write_merged_config_to_cwd()
 
@@ -73,8 +78,40 @@ class Job:
         return nkpx, nkpy, nkpz
 
     def submit(self, cwd: Path):
-        """Submit the job."""
-        subprocess.run(["qsub", "jobscript.sh"], check=True, cwd=str(cwd))
+        """Submit the job.
+        
+        If a qsub.pid file exists in the directory, read the PID and cancel the old job
+        before submitting a new one. The new job ID is then saved to qsub.pid.
+        """
+        pid_file = cwd / "qsub.pid"
+
+        # 1. Check and cancel existing job
+        if pid_file.is_file():
+            old_pid = pid_file.read_text().strip()
+            if old_pid:
+                print(f"Found existing job ID {old_pid} in {pid_file}. Cancelling...")
+                try:
+                    subprocess.run(["qdel", old_pid], check=False)
+                except Exception as e:
+                    print(f"Failed to cancel job {old_pid}: {e}")
+        
+        # 2. Submit new job and capture stdout
+        result = subprocess.run(
+            ["qsub", "jobscript.sh"], 
+            check=True, 
+            cwd=cwd, 
+            stdout=subprocess.PIPE, 
+            text=True
+        )
+        
+        # 3. Extract job ID (assuming qsub prints the job ID to stdout)
+        # Output format varies by scheduler (Torque, PBS, Slurm wrapper), 
+        # but usually it's "12345.server" or just "12345".
+        # We save the whole stripped output for now.
+        new_pid = result.stdout.strip()
+        if new_pid:
+            pid_file.write_text(new_pid)
+            print(f"Submitted job {new_pid}. PID saved to {pid_file}.")
     
     def _write_poscar(self, poscar, cwd: Path):
         """
@@ -213,6 +250,72 @@ class Job:
             "jobscript must be a path-like object or a string"
         )   
 
+    def _resolve_path(self, arg: Optional[Path], section: str, key: str):
+        """Resolve a value from CLI or config.
+
+        Priority: explicit argument > config[section][key].
+
+        For keys like 'poscar' and 'jobscript' the config values are
+        path-like strings. For 'incar' it can be a dict, and for
+        'kpoints' it can be a float or the string 'line'. We therefore
+        return the raw config value without wrapping it in Path.
+        """
+
+        if arg is not None:
+            return arg
+
+        section_cfg = self.config.get(section) or {}
+        cfg_val = section_cfg.get(key)
+        if cfg_val is None:
+            raise ValueError(
+                f"Missing required value: '{key}'. "
+                "Provide it as an argument or in vasp_config.yaml."
+            )
+        return cfg_val
+
+    def _handle_cp(self, job_type: str, cwd: Path):
+        """Handle file/directory copying defined in config['cp'].
+        
+        Format in yaml:
+          cp:
+            source_path: target_path
+            
+        source_path is resolved relative to self.work_dir (if not absolute).
+        target_path is resolved relative to cwd (if not absolute).
+        """
+        section_cfg = self.config.get(job_type) or {}
+        cp_cfg = section_cfg.get("cp")
+        
+        if not cp_cfg or not isinstance(cp_cfg, dict):
+            return
+
+        for src, dst in cp_cfg.items():
+            # Resolve source path
+            src_path = Path(src)
+            if not src_path.is_absolute():
+                src_path = self.work_dir / src_path
+                
+            # Resolve destination path
+            dst_path = cwd / dst
+            
+            if not src_path.exists():
+                print(f"Warning: Source path '{src_path}' does not exist. Skipping copy.")
+                continue
+                
+            if src_path.is_dir():
+                # Copy directory
+                if dst_path.exists():
+                     # Remove existing destination directory to avoid FileExistsError
+                     # or merge strategies (here we overwrite/replace)
+                     shutil.rmtree(dst_path)
+                shutil.copytree(src_path, dst_path)
+                print(f"Copied directory {src_path} -> {dst_path}")
+            else:
+                # Copy file
+                # Ensure parent directory exists
+                dst_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src_path, dst_path)
+                print(f"Copied file {src_path} -> {dst_path}")
 
     def relax(
         self,
@@ -253,40 +356,23 @@ class Job:
         cwd=self.work_dir / "relax"
         cwd.mkdir(exist_ok=True)
 
-        def _resolve_path(arg: Optional[Path], key: str):
-            """Resolve a value from CLI or config.
-
-            Priority: explicit argument > config['relax'][key].
-
-            For keys like 'poscar' and 'jobscript' the config values are
-            path-like strings. For 'incar' it can be a dict, and for
-            'kpoints' it can be a float or the string 'line'. We therefore
-            return the raw config value without wrapping it in Path.
-            """
-
-            if arg is not None:
-                return arg
-
-            relax_cfg = self.config.get("relax") or {}
-            cfg_val = relax_cfg.get(key)
-            if cfg_val is None:
-                raise ValueError(
-                    f"Missing required value: '{key}'. "
-                    "Provide it as an argument or in vasp_config.yaml."
-                )
-            return cfg_val
+        self._handle_cp("relax", cwd)
 
         # Resolve all paths
-        poscar_path = _resolve_path(poscar, "poscar")
+        poscar_path = self._resolve_path(poscar, "relax", "poscar")
         self._write_poscar(poscar_path, cwd)
-        incar_path = _resolve_path(incar, "incar")
+        incar_path = self._resolve_path(incar, "relax", "incar")
         self._write_incar(incar_path, cwd)
-        potcar_path = _resolve_path(potcar, "potcar")
+        potcar_path = self._resolve_path(potcar, "relax", "potcar")
         self._write_potcar(potcar_path, cwd)
-        kpoints_path = _resolve_path(kpoints, "kpoints")
+        kpoints_path = self._resolve_path(kpoints, "relax", "kpoints")
         self._write_kpoints(kpoints_path, cwd,poscar=poscar_path)
-        jobscript_path = _resolve_path(jobscript, "jobscript")
+        jobscript_path = self._resolve_path(jobscript, "relax", "jobscript")
         self._write_jobscript(jobscript_path, cwd)
+        
+        # Handle file copies
+        self._handle_cp("relax", cwd)
+
         if yes:
             self.submit(cwd)
         else:
@@ -294,8 +380,213 @@ class Job:
             self.submit(cwd)
 
 
+    def static(
+        self,
+        poscar: Optional[Path] = typer.Option(
+            None,
+            "--poscar",
+            help="Path to POSCAR file (falls back to vasp_config.yaml if omitted)",
+        ),
+        incar: Optional[Path] = typer.Option(
+            None,
+            "--incar",
+            help="Path to INCAR file (falls back to vasp_config.yaml if omitted)",
+        ),
+        potcar: Optional[Path] = typer.Option(
+            None,
+            "--potcar",
+            help="Path to POTCAR file (falls back to vasp_config.yaml if omitted)",
+        ),
+        kpoints: Optional[str] = typer.Option(
+            None,
+            "--kpoints",
+            help="KPOINTS specification: path, 'line', or density value as string",
+        ),
+        jobscript: Optional[Path] = typer.Option(
+            None,
+            "--jobscript",
+            help="Path to jobscript file (falls back to vasp_config.yaml if omitted)",
+        ),
+        yes: bool = typer.Option(
+            False,
+            "--yes",
+            "-y",
+            help="Submit without interactive confirmation",
+        ),
+    ) -> None:
+        """Static calculation job helper using Job.static with config fallbacks."""
+
+        cwd=self.work_dir / "static"
+        cwd.mkdir(exist_ok=True)
+
+        self._handle_cp("static", cwd)
+
+        # Resolve all paths
+        poscar_path = self._resolve_path(poscar, "static", "poscar")
+        self._write_poscar(poscar_path, cwd)
+        incar_path = self._resolve_path(incar, "static", "incar")
+        self._write_incar(incar_path, cwd)
+        potcar_path = self._resolve_path(potcar, "static", "potcar")
+        self._write_potcar(potcar_path, cwd)
+        kpoints_path = self._resolve_path(kpoints, "static", "kpoints")
+        self._write_kpoints(kpoints_path, cwd,poscar=poscar_path)
+        jobscript_path = self._resolve_path(jobscript, "static", "jobscript")
+        self._write_jobscript(jobscript_path, cwd)
+        
+        # Handle file copies
+        self._handle_cp("static", cwd)
+
+        if yes:
+            self.submit(cwd)
+        else:
+            typer.confirm("Submit job?", abort=True)
+            self.submit(cwd)
+    def dos(
+        self,
+        poscar: Optional[Path] = typer.Option(
+            None,
+            "--poscar",
+            help="Path to POSCAR file (falls back to vasp_config.yaml if omitted)",
+        ),
+        incar: Optional[Path] = typer.Option(
+            None,
+            "--incar",
+            help="Path to INCAR file (falls back to vasp_config.yaml if omitted)",
+        ),
+        potcar: Optional[Path] = typer.Option(
+            None,
+            "--potcar",
+            help="Path to POTCAR file (falls back to vasp_config.yaml if omitted)",
+        ),
+        kpoints: Optional[str] = typer.Option(
+            None,
+            "--kpoints",
+            help="KPOINTS specification: path, 'line', or density value as string",
+        ),
+        jobscript: Optional[Path] = typer.Option(
+            None,
+            "--jobscript",
+            help="Path to jobscript file (falls back to vasp_config.yaml if omitted)",
+        ),
+        yes: bool = typer.Option(
+            False,
+            "--yes",
+            "-y",
+            help="Submit without interactive confirmation",
+        ),
+    ) -> None:
+        """DOS calculation job helper using Job.dos with config fallbacks."""
+
+        cwd=self.work_dir / "dos"
+        cwd.mkdir(exist_ok=True)
+
+        # Resolve all paths
+        poscar_path = self._resolve_path(poscar, "dos", "poscar")
+        self._write_poscar(poscar_path, cwd)
+        incar_path = self._resolve_path(incar, "dos", "incar")
+        self._write_incar(incar_path, cwd)
+        potcar_path = self._resolve_path(potcar, "dos", "potcar")
+        self._write_potcar(potcar_path, cwd)
+        kpoints_path = self._resolve_path(kpoints, "dos", "kpoints")
+        self._write_kpoints(kpoints_path, cwd,poscar=poscar_path)
+        jobscript_path = self._resolve_path(jobscript, "dos", "jobscript")
+        self._write_jobscript(jobscript_path, cwd)
+        
+        # Handle file copies
+        self._handle_cp("dos", cwd)
+
+        if yes:
+            self.submit(cwd)
+        else:
+            typer.confirm("Submit job?", abort=True)
+            self.submit(cwd)
+            
+    def band(self,
+        poscar: Optional[Path] = typer.Option(
+            None,
+            "--poscar",
+            help="Path to POSCAR file (falls back to vasp_config.yaml if omitted)",
+        ),
+        incar: Optional[Path] = typer.Option(
+            None,
+            "--incar",
+            help="Path to INCAR file (falls back to vasp_config.yaml if omitted)",
+        ),
+        potcar: Optional[Path] = typer.Option(
+            None,
+            "--potcar",
+            help="Path to POTCAR file (falls back to vasp_config.yaml if omitted)",
+        ),
+        kpoints: Optional[str] = typer.Option(
+            None,
+            "--kpoints",
+            help="KPOINTS specification: path, 'line', or density value as string",
+        ),
+        jobscript: Optional[Path] = typer.Option(
+            None,
+            "--jobscript",
+            help="Path to jobscript file (falls back to vasp_config.yaml if omitted)",
+        ),
+        yes: bool = typer.Option(
+            False,
+            "--yes",
+            "-y",
+            help="Submit without interactive confirmation",
+        ),
+    ) -> None:
+        """Band structure calculation job helper using Job.band with config fallbacks."""
+
+        cwd=self.work_dir / "band"
+        cwd.mkdir(exist_ok=True)
+
+        # Resolve all paths
+        poscar_path = self._resolve_path(poscar, "band", "poscar")
+        self._write_poscar(poscar_path, cwd)
+        incar_path = self._resolve_path(incar, "band", "incar")
+        self._write_incar(incar_path, cwd)
+        potcar_path = self._resolve_path(potcar, "band", "potcar")
+        self._write_potcar(potcar_path, cwd)
+        kpoints_path = self._resolve_path(kpoints, "band", "kpoints")
+        self._write_kpoints(kpoints_path, cwd,poscar=poscar_path)
+        jobscript_path = self._resolve_path(jobscript, "band", "jobscript")
+        self._write_jobscript(jobscript_path, cwd)
+        
+        # Handle file copies
+        self._handle_cp("band", cwd)
+
+        if yes:
+            self.submit(cwd)
+        else:
+            typer.confirm("Submit job?", abort=True)
+            self.submit(cwd)
 
 
-if __name__ == "__main__":
-    job = Job()
-    typer.run(job.relax)
+# --- 实例化并提供外部接口
+
+def create_lazy_command(cls, method_name):
+    """
+    Create a command wrapper that instantiates the class lazily.
+    This prevents the class from initializing (and reading config) at module import time.
+    """
+    method = getattr(cls, method_name)
+    
+    @wraps(method)
+    def wrapper(*args, **kwargs):
+        # Instantiate the class only when the command is called
+        instance = cls()
+        # Call the bound method on the instance
+        return getattr(instance, method_name)(*args, **kwargs)
+    
+    # Update the wrapper signature to remove 'self' so Typer parses arguments correctly
+    sig = inspect.signature(method)
+    params = [p for p in sig.parameters.values() if p.name != "self"]
+    wrapper.__signature__ = sig.replace(parameters=params)
+    
+    return wrapper
+
+app = typer.Typer(help="vasp jobs command-line interface")
+
+app.command(name="relax")(create_lazy_command(Job, "relax"))
+app.command(name="static")(create_lazy_command(Job, "static"))
+app.command(name="dos")(create_lazy_command(Job, "dos"))
+
